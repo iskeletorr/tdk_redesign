@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:practice_1/core/components/login_signup/common_image.dart';
-import 'package:practice_1/core/components/login_signup/field_label.dart';
-import 'package:practice_1/core/components/login_signup/page_title.dart';
-import 'package:practice_1/core/components/login_signup/rounded_button.dart';
-import 'package:practice_1/core/components/login_signup/standard_field.dart';
+
+import '../../core/components/login_signup/common_image.dart';
+import '../../core/components/login_signup/page_title.dart';
+import '../../core/components/login_signup/rounded_button.dart';
+import '../../core/components/login_signup/standard_field.dart';
 
 class ForgotScreen extends StatefulWidget {
   const ForgotScreen({super.key});
@@ -30,12 +30,12 @@ class _ForgotScreenState extends State<ForgotScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
-                    const FieldLabel('Email'),
                     StandardField(controller: controller, hintText: 'Your email id', field: 'Email'),
                     const SizedBox(height: 20),
-                     RoundedButton(title: 'Submit',press: () {
-                      
-                    },),
+                    RoundedButton(
+                      title: 'Submit',
+                      press: () {},
+                    ),
                   ],
                 ),
               ),

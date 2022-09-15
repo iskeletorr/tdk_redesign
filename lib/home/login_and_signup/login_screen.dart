@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:practice_1/home/login_and_signup/forgot_screen.dart';
 import 'package:practice_1/home/login_and_signup/signup_screen.dart';
 
 import '../../core/components/login_signup/common_image.dart';
-import '../../core/components/login_signup/field_label.dart';
 import '../../core/components/login_signup/page_title.dart';
 import '../../core/components/login_signup/password_field.dart';
 import '../../core/components/login_signup/rounded_button.dart';
 import '../../core/components/login_signup/standard_field.dart';
+import 'forgot_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,7 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
   }
 
   @override
@@ -50,14 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: Column(
                   children: [
-                    const FieldLabel('Email'),
                     StandardField(
                       hintText: 'Your email id',
                       controller: controller,
                       field: 'Email',
                     ),
                     const SizedBox(height: 20),
-                    const FieldLabel('Password'),
                     const PasswordField(), // suffix
                     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                       TextButton(
@@ -81,13 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               signupButton(),
               Row(
-                children: [
+                children: const [
                   Expanded(
                       child: Divider(
                     color: Colors.black45,
                   )),
-                  const Text('Or login with'),
-                  const Expanded(child: Divider()),
+                  Text('Or login with'),
+                  Expanded(child: Divider()),
                 ],
               ),
               bottomButtons()
