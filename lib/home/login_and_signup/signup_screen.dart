@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/components/login_signup/camera.dart';
-import '../../core/components/login_signup/common_image.dart';
-import '../../core/components/login_signup/page_title.dart';
-import '../../core/components/login_signup/password_field.dart';
-import '../../core/components/login_signup/standard_field.dart';
+import '../../components/login_signup/camera.dart';
+import '../../components/login_signup/common_image.dart';
+import '../../components/login_signup/page_title.dart';
+import '../../components/login_signup/password_field.dart';
+import '../../components/login_signup/standard_field.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

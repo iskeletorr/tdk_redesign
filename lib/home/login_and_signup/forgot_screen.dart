@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/components/login_signup/common_image.dart';
-import '../../core/components/login_signup/page_title.dart';
-import '../../core/components/login_signup/rounded_button.dart';
-import '../../core/components/login_signup/standard_field.dart';
+import '../../components/login_signup/common_image.dart';
+import '../../components/login_signup/page_title.dart';
+import '../../components/login_signup/rounded_button.dart';
+import '../../components/login_signup/standard_field.dart';
 
 class ForgotScreen extends StatefulWidget {
   const ForgotScreen({super.key});

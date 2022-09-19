@@ -1,6 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:practice_1/model/app_router.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -10,14 +13,39 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-// bottom bar corners
+  late final TextEditingController searchController;
+  String selectedValue = '';
+  final wordModelBox = Hive.box('wordModels');
   int pageIndex = 0;
+
+  List<DropdownMenuItem<String>> dropdownItems() {
+    List<DropdownMenuItem<String>> searchedItems = [];
+    for (int element in wordModelBox.keys) {
+      searchedItems.add(DropdownMenuItem(value: wordModelBox.keyAt(element).toString(), child: Text(wordModelBox.keyAt(element).toString())),);
+    }
+    return searchedItems;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: appBar(),
-      bottomNavigationBar: SizedBox(height: 129,child: bottomNavigationBar()),
+      bottomNavigationBar: SizedBox(height: 129, child: bottomNavigationBar()),
       body: DefaultTabController(
         length: 2,
         child: Container(
@@ -142,7 +170,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         items: [
           BottomNavigationBarItem(
               icon: Container(
-                color: Colors.green,
+                color: Colors.white,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -200,8 +228,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         const SizedBox(width: 8),
         const Icon(Icons.search, color: Colors.grey),
         const SizedBox(width: 8),
-        const Expanded(
+        Expanded(
             child: TextField(
+          //   DropdownButtonFormField(
+          // value: selectedValue,
+          // items: [],
+          // onChanged: (value) {
+          //   selectedValue = value.toString();
+          // },
+          // DropdownMenu
+          controller: searchController,
           decoration: InputDecoration(hintText: 'Bir kelime yazın..', hintStyle: TextStyle(color: Colors.grey), border: InputBorder.none),
         )),
         IconButton(
@@ -281,7 +317,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   InkWell iconButtons(IconData? iconData, Color? color, String text) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, '/desc');
+        AutoRouter.of(context).push(DescRoute(text: searchController.text));
       },
       child: Container(
         height: 64,

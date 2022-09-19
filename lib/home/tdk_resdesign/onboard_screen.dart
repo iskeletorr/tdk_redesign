@@ -1,5 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:practice_1/constants/app_constants.dart';
+import 'package:practice_1/model/app_router.dart';
 
 class OnboardScreen extends StatefulWidget {
   const OnboardScreen({super.key});
@@ -9,29 +14,14 @@ class OnboardScreen extends StatefulWidget {
 }
 
 class _OnboardScreenState extends State<OnboardScreen> {
-  @override
+  PageController pageController = PageController();
+  final initBox = Hive.box('initModel');
+@override
   void initState() {
     // TODO: implement initState
     super.initState();
-    initialization();
   }
 
-  void initialization() async {
-    // This is where you can initialize the resources needed by your app while
-    // the splash screen is displayed.  Remove the following example because
-    // delaying the user experience is a bad design practice!
-    // ignore_for_file: avoid_print
-    print('ready in 3...');
-    await Future.delayed(const Duration(seconds: 1));
-    print('ready in 2...');
-    await Future.delayed(const Duration(seconds: 1));
-    print('ready in 1...');
-    await Future.delayed(const Duration(seconds: 1));
-    print('go!');
-    FlutterNativeSplash.remove();
-  }
-
-  //img background
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +32,8 @@ class _OnboardScreenState extends State<OnboardScreen> {
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/welcome');
+                  initBox.put(kOnboardSkipStorageKey, true);
+                  AutoRouter.of(context).push(const WelcomeRoute());
                 },
                 child: Row(
                   children: const [
@@ -64,6 +55,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
 
   PageView pageViewBuilder() {
     return PageView.builder(
+        controller: pageController,
         itemCount: 3,
         itemBuilder: (context, index) {
           return Container(
@@ -117,6 +109,23 @@ class _OnboardScreenState extends State<OnboardScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white),
                           ))
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                          color: Colors.white,
+                          onPressed: () {
+                            pageController.nextPage(duration: Duration(milliseconds: 600), curve: Curves.ease);
+                            // without animation?
+                          },
+                          icon: index == 2
+                              ? Icon(
+                                  Icons.noise_control_off,
+                                  color: Colors.transparent,
+                                )
+                              : Icon(Icons.arrow_forward_ios_rounded))
                     ],
                   )
                 ],

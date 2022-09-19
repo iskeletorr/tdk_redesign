@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:practice_1/home/login_and_signup/signup_screen.dart';
 
-import '../../core/components/login_signup/common_image.dart';
-import '../../core/components/login_signup/page_title.dart';
-import '../../core/components/login_signup/password_field.dart';
-import '../../core/components/login_signup/rounded_button.dart';
-import '../../core/components/login_signup/standard_field.dart';
+import '../../components/login_signup/common_image.dart';
+import '../../components/login_signup/page_title.dart';
+import '../../components/login_signup/password_field.dart';
+import '../../components/login_signup/rounded_button.dart';
+import '../../components/login_signup/standard_field.dart';
 import 'forgot_screen.dart';
 
 class LoginScreen extends StatefulWidget {
