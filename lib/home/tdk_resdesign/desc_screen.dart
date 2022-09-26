@@ -1,10 +1,11 @@
-import 'dart:convert';
-import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:practice_1/model/word_model.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:practice_1/util/pronunciation.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/word_model_provider.dart';
+import '../../network/network_manager.dart';
+import '../../util/user_preferences.dart';
 
 class DescScreen extends StatefulWidget {
   const DescScreen({super.key, this.text});
@@ -14,58 +15,48 @@ class DescScreen extends StatefulWidget {
 }
 
 class _DescScreenState extends State<DescScreen> {
-  String url = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
   late WordModel? box;
-  final wordModelBox = Hive.box('wordModels');
-  late final AudioPlayer audioPlayer;
-  late final List<WordModel> word;
-  late final Future<List<WordModel>> lateWordModel;
+  Future<WordModel?>? lateWordModel;
   int pageIndex = 0;
 
-  Future<List<WordModel>> getWord() async {
-    final response = await http.get(Uri.parse('$url${widget.text}'));
-    final jsonData = jsonDecode(response.body);
-    // word = jsonData[0]['word'][0];
-    final wordModel = jsonData.map((e) => WordModel.fromJson(e)).toList();
-    word = List.from(wordModel);
-    // if(!wordModelBox.containsKey(widget.text))
-    await wordModelBox.put(widget.text, word.first);
-    
-    // print(box);
-    setState(() {});
-    return word;
+  Future<WordModel> getWordModel() async {
+    WordModel model = await NetworkManager.getWord(widget.text);
+    await context.read<WordModelProvider>().setWord(widget.text!, model);
+    // await UserPreferences.instance.putWord(widget.text!, model);
+    return Future.value(model);
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    lateWordModel = getWord();
-    box = wordModelBox.get(widget.text);
-    audioPlayer = AudioPlayer();
+    box = UserPreferences.instance.getWord(widget.text.toString());
+    //  context.read<WordModelProvider>().setWord(widget.text!, box!);
+    if (box == null) {
+      lateWordModel = getWordModel();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        bottomNavigationBar: Container(
-            padding: const EdgeInsets.only(top: 2),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.white),
-            child: bottomNavigationBar()),
-        body: FutureBuilder<List<WordModel>>(
-            future: lateWordModel,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return defaultTabController();
-              }
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return defaultTabController();
-            }));
+    return Consumer<WordModelProvider>(
+        builder: (context, wordModelProvider, child) => Scaffold(
+            body: box == null
+                ? FutureBuilder<WordModel?>(
+                    future: lateWordModel,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const Center(child: Text('data is not cached'));
+                        // return defaultTabController(box);
+                      }
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return defaultTabController(snapshot.data);
+                    })
+                : defaultTabController(box)));
   }
 
-  DefaultTabController defaultTabController() {
+  DefaultTabController defaultTabController(WordModel? boxing) {
     return DefaultTabController(
       length: 3,
       child: Column(
@@ -80,25 +71,30 @@ class _DescScreenState extends State<DescScreen> {
               ),
               centerTitle: true,
               title: Row(children: [
-                const SizedBox(
-                  width: 30,
-                ),
+                const SizedBox(width: 30),
                 IconButton(
-                    onPressed: ()  {
-WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-                        String audioString = '${word.first.phonetics![0].audio}';
-                      await audioPlayer.setUrl(audioString);
-                      await audioPlayer.play();
-});
-                    },
-                    icon: const Icon(
-                      Icons.volume_up_outlined,
-                      size: 40,
-                    )),
-                const SizedBox(
-                  width: 10,
-                ),
-                Text('${box?.word}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w500))
+                    onPressed: () => Pronunciation.instance.playSound('${boxing!.phonetics![0].audio}'),
+                    icon: const Icon(Icons.volume_up_outlined, size: 40)),
+                const SizedBox(width: 10),
+                Text('${boxing?.word}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w500)),
+                const SizedBox(width: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          // boxing.isFavorite = !boxing.isFavorite!;
+                          // UserPreferences.instance.putWord(widget.text!, boxing);
+                          // print(boxing.isFavorite);
+                          // setState(() {});
+                          Provider.of<WordModelProvider>(context, listen: false).changeFavoriteFromDesc(widget.text!);
+                        },
+                        icon: Icon(
+                          Icons.bookmark_border,
+                          color: boxing!.isFavorite! ? Colors.black : Colors.white,
+                        )),
+                  ],
+                )
               ])),
           Container(
             color: const Color(0xFFc91d42),
@@ -142,11 +138,10 @@ WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(width: 15),
-                                bodyColumn(),
-                                const SizedBox(height: 50),
-                                bodyColumn(),
-                                const SizedBox(height: 50),
+                                // const SizedBox(width: 15),
+                                ...boxing.meanings!.map((e) => bodyColumn(boxing, boxing.meanings!.indexOf(e))).toList(),
+                                // bodyColumn(boxing, 1),
+                                // bodyColumn(boxing, 2),
                               ],
                             ),
                           )
@@ -161,114 +156,54 @@ WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
     );
   }
 
-  Column bodyColumn() {
-    List? synonym = box?.meanings![0].definitions!.first.synonyms;
+  Column bodyColumn(WordModel? box, int index) {
+    List? synonym = box?.meanings![index].definitions!.first.synonyms;
+    String? example = box?.meanings![index].definitions!.first.example;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // index by parameter ??
-            const Text('0', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('${index + 1}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(width: 7),
             Flexible(
               child: RichText(
                   text: TextSpan(children: [
-                    // word.first.meanings![0].partOfSpeech
-                TextSpan(text: box?.meanings![0].partOfSpeech, style: const TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold)),
+                TextSpan(
+                    text: box?.meanings![index].partOfSpeech, style: const TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold)),
                 const TextSpan(text: "   "),
                 TextSpan(
-                  text: '${box?.meanings![0].definitions!.first.definition}',
+                  text: '${box?.meanings![index].definitions!.first.definition}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
                 )
               ])),
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        Text(
-          '${box?.meanings![0].definitions!.first.example}', 
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
-        ),
-        if((synonym?.isNotEmpty != false)) 
-        Column(
-          children: [
-            const SizedBox(height: 20),
-            Text(
-              '${synonym!.first}', 
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
-            ),
-          ],
-        ),
+        if ((example != null))
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                example,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
+              ),
+            ],
+          ),
+        if ((synonym?.isNotEmpty != false))
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                '${synonym!.first}',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
+              ),
+            ],
+          ),
+        const SizedBox(height: 30),
       ],
     );
-  }
-
-  BottomNavigationBar bottomNavigationBar() {
-    return BottomNavigationBar(
-        currentIndex: pageIndex,
-        onTap: (int index) {
-          setState(() {
-            pageIndex = index;
-          });
-        },
-        backgroundColor: Colors.white,
-        iconSize: 35,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFc91d42),
-        selectedLabelStyle: const TextStyle(fontSize: 20),
-        elevation: 0,
-        items: [
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.home_outlined),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 0 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.search),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 1 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.bookmark_border),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 2 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.history),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 3 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-        ]);
   }
 
   InkWell iconButtons(IconData? iconData, Color? color, String text) {
@@ -282,12 +217,9 @@ WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
           // elevation: 5.0,
           color: Colors.pinkAccent,
           borderRadius: BorderRadius.circular(10),
-          child: Container(
-            // padding: const EdgeInsets.all(12.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icon(iconData, color: color), const SizedBox(height: 7), Text(text, style: TextStyle(color: color))],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Icon(iconData, color: color), const SizedBox(height: 7), Text(text, style: TextStyle(color: color))],
           ),
         ),
       ),

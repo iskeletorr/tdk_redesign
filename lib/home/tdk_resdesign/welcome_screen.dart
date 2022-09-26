@@ -1,9 +1,11 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:practice_1/model/app_router.dart';
+import 'package:practice_1/util/user_preferences.dart';
+import 'package:provider/provider.dart';
+import '../../model/word_model.dart';
+import '../../provider/word_model_provider.dart';
+import '../../navigation/app_router.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -13,75 +15,71 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  late final TextEditingController searchController;
-  String selectedValue = '';
-  final wordModelBox = Hive.box('wordModels');
-  int pageIndex = 0;
-
-  List<DropdownMenuItem<String>> dropdownItems() {
-    List<DropdownMenuItem<String>> searchedItems = [];
-    for (int element in wordModelBox.keys) {
-      searchedItems.add(DropdownMenuItem(value: wordModelBox.keyAt(element).toString(), child: Text(wordModelBox.keyAt(element).toString())),);
-    }
-    return searchedItems;
-  }
+  List<String> wordList = UserPreferences.instance.keyList;
+  String? randomWord;
+  WordModel? randomWordModel;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    searchController = TextEditingController();
+    if (wordList.isEmpty) {
+      randomWord = 'empty';
+      randomWordModel = WordModel(word: randomWord);
+      wordList.add(randomWord!);
+    } else {
+      wordList.elementAt(0) == 'empty' ? wordList.removeAt(0) : null;
+      randomWord = wordList.elementAt(Random().nextInt(wordList.length));
+      randomWordModel = UserPreferences.instance.getWord(randomWord!);
+    }
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: appBar(),
-      bottomNavigationBar: SizedBox(height: 129, child: bottomNavigationBar()),
-      body: DefaultTabController(
-        length: 2,
-        child: Container(
-          color: Color(0xFFc91d42),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+    return Consumer<WordModelProvider>(
+        builder: (context, wordModelProvider, child) => Scaffold(
+              backgroundColor: Colors.white,
+              appBar: appBar(),
+              body: DefaultTabController(
+                length: 2,
                 child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(9), color: Colors.white),
-                  child: searchRow(),
+                  color: const Color(0xFFc91d42),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(9), color: Colors.white),
+                          child: searchRow(),
+                        ),
+                      ),
+                      const TabBar(indicatorColor: Colors.transparent, tabs: [
+                        Tab(
+                            child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text('Günün Kelimesi', style: TextStyle(fontSize: 16)),
+                        )),
+                        Tab(
+                            child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text('Tümü', style: TextStyle(fontSize: 16)),
+                        ))
+                      ]),
+                      Expanded(
+                        child: TabBarView(
+                          children: [SingleChildScrollView(child: firstTabView()), const Center(child: Text('second tab view'))],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const TabBar(indicatorColor: Colors.transparent, tabs: [
-                Tab(
-                    child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Günün Kelimesi', style: TextStyle(fontSize: 16)),
-                )),
-                Tab(
-                    child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text('Tümü', style: TextStyle(fontSize: 16)),
-                ))
-              ]),
-              Expanded(
-                child: TabBarView(
-                  children: [SingleChildScrollView(child: firstTabView()), const Center(child: Text('second tab view'))],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ));
   }
 
   Column firstTabView() {
@@ -96,9 +94,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               Container(color: Colors.white, height: 30),
               Container(
                   decoration: BoxDecoration(
-                      border: Border.all(width: 0, color: Color(0xFFf8f1e9)),
-                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
-                      color: Color(0xFFf8f1e9)),
+                      border: Border.all(width: 0, color: const Color(0xFFf8f1e9)),
+                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+                      color: const Color(0xFFf8f1e9)),
                   height: 30),
             ],
           ),
@@ -115,16 +113,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             color: Colors.white,
             child: Row(
               children: [
-                Padding(padding: const EdgeInsets.all(8.0), child: wordContainer()),
-                const SizedBox(width: 20),
-                Padding(padding: const EdgeInsets.all(8.0), child: wordContainer()),
+                // ??????
+                // .sublist(wordList.length-3, wordList.length)
+                ...wordList.map((e) => wordContainer(wordList.indexOf(e))).toList(),
               ],
             ),
           ),
         ),
         Container(
-            decoration: BoxDecoration(color: Colors.white, border: Border.all(width: 0, color: Colors.white)),
-            child: commonRow('Bir Deyim / Atasözü')),
+          height: 10,
+          color: Colors.white,
+        )
       ],
     );
   }
@@ -151,77 +150,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  BottomNavigationBar bottomNavigationBar() {
-    return BottomNavigationBar(
-        currentIndex: pageIndex,
-        onTap: (int index) {
-          setState(() {
-            pageIndex = index;
-          });
-        },
-        backgroundColor: Colors.white,
-        iconSize: 35,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFc91d42),
-        // selectedLabelStyle: TextStyle(fontSize: 0),
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        elevation: 0,
-        items: [
-          BottomNavigationBarItem(
-              icon: Container(
-                color: Colors.white,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.home_outlined),
-                    Divider(
-                      thickness: 5,
-                      color: pageIndex == 0 ? Colors.red : Colors.transparent,
-                    )
-                  ],
-                ),
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 1 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.bookmark_border),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 2 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history),
-                  Divider(
-                    thickness: 5,
-                    color: pageIndex == 3 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-        ]);
-  }
-
   Row searchRow() {
     return Row(
       children: [
@@ -229,17 +157,32 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         const Icon(Icons.search, color: Colors.grey),
         const SizedBox(width: 8),
         Expanded(
-            child: TextField(
-          //   DropdownButtonFormField(
-          // value: selectedValue,
-          // items: [],
-          // onChanged: (value) {
-          //   selectedValue = value.toString();
-          // },
-          // DropdownMenu
-          controller: searchController,
-          decoration: InputDecoration(hintText: 'Bir kelime yazın..', hintStyle: TextStyle(color: Colors.grey), border: InputBorder.none),
-        )),
+          child: Autocomplete<String>(
+            optionsBuilder: (textEditingValue) {
+              if (textEditingValue.text == '') {
+                return const Iterable<String>.empty();
+              }
+              return UserPreferences.instance.keyList.where((String option) {
+                return option.contains(textEditingValue.text.toLowerCase());
+              });
+            },
+            onSelected: (String selection) {
+              AutoRouter.of(context).push(DescRoute(text: selection));
+              debugPrint('You just selected $selection');
+            },
+            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+              return TextFormField(
+                controller: textEditingController,
+                decoration: const InputDecoration(hintText: 'Bir kelime yazın..', hintStyle: TextStyle(color: Colors.grey), border: InputBorder.none),
+                focusNode: focusNode,
+                onEditingComplete: () {
+                  wordList.add(textEditingController.text);
+                  AutoRouter.of(context).push(DescRoute(text: textEditingController.text));
+                },
+              );
+            },
+          ),
+        ),
         IconButton(
             onPressed: () {},
             icon: const Icon(Icons.mic_none, color: Color(0xFFc91d42)),
@@ -254,22 +197,44 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  Container wordContainer() {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: const Color(0xFFf3f3f2)),
-      child: Row(
-        children: [
-          Column(
-            children: const [
-              Text('muazzam', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
-              SizedBox(height: 4),
-              Text('[s] çok büyük, kocaman', style: TextStyle(fontSize: 14, color: Color(0xFF8a8686))),
-            ],
-          ),
-          const SizedBox(width: 100),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.bookmark_border))
-        ],
+  Widget wordContainer(int index) {
+    // print(index);
+    // print(wordList[index]);
+    // var keyWord;
+    // if (index == 0) {
+    //   keyWord = randomWordModel;
+    // } else {
+    var keyWord = UserPreferences.instance.getWord(wordList[index]);
+    if (keyWord == null) return SizedBox.shrink();
+    // }
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: const Color(0xFFf3f3f2)),
+        child: Row(
+          children: [
+            Column(
+              children: [
+                Text('${keyWord!.word}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                const Text('[s] çok büyük, kocaman', style: TextStyle(fontSize: 14, color: Color(0xFF8a8686))),
+              ],
+            ),
+            const SizedBox(width: 100),
+            IconButton(
+                onPressed: () {
+                  keyWord.isFavorite = !keyWord.isFavorite!;
+                  UserPreferences.instance.putWord(wordList[index], keyWord);
+                  print(keyWord.isFavorite);
+                  setState(() {});
+                },
+                icon: Icon(
+                  Icons.bookmark_border,
+                  color: keyWord.isFavorite! ? Colors.red : Colors.black,
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -281,7 +246,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          TextButton(onPressed: () {}, child: const Text('Tümü', style: TextStyle(color: Colors.grey)))
+          TextButton(
+              onPressed: () {
+                AutoRouter.of(context).navigate(const SearchRouter());
+              },
+              child: const Text('Tümü', style: TextStyle(color: Colors.grey)))
         ],
       ),
     );
@@ -296,9 +265,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           const SizedBox(height: 35),
           const Text(
             '16.02.2020',
-            style: TextStyle(color: Color(0xFFd8c4b8)),
+            style: TextStyle(color: Color.fromARGB(255, 31, 28, 27)),
           ),
-          const Text('bayrak', style: TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w500)),
+          Text('${randomWordModel?.word}', style: const TextStyle(fontSize: 40, color: Colors.black, fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -316,9 +285,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   InkWell iconButtons(IconData? iconData, Color? color, String text) {
     return InkWell(
-      onTap: () {
-        AutoRouter.of(context).push(DescRoute(text: searchController.text));
-      },
       child: Container(
         height: 64,
         width: 64,

@@ -22,13 +22,14 @@ class WordModelAdapter extends TypeAdapter<WordModel> {
       phonetics: (fields[2] as List?)?.cast<Phonetic>(),
       origin: fields[3] as String?,
       meanings: (fields[4] as List?)?.cast<Meaning>(),
+      isFavorite: fields[5] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, WordModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.word)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class WordModelAdapter extends TypeAdapter<WordModel> {
       ..writeByte(3)
       ..write(obj.origin)
       ..writeByte(4)
-      ..write(obj.meanings);
+      ..write(obj.meanings)
+      ..writeByte(5)
+      ..write(obj.isFavorite);
   }
 
   @override

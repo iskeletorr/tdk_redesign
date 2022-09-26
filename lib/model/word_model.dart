@@ -13,13 +13,14 @@ List<WordModel> wordModelFromJson(String str) => List<WordModel>.from(json.decod
 String wordModelToJson(List<WordModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 @HiveType(typeId: 0)
-class WordModel {
+class WordModel{
   WordModel({
     this.word,
     this.phonetic,
     this.phonetics,
     this.origin,
     this.meanings,
+    this.isFavorite = false,
   });
   @HiveField(0)
   String? word;
@@ -31,6 +32,8 @@ class WordModel {
   String? origin;
   @HiveField(4)
   List<Meaning>? meanings;
+  @HiveField(5)
+  bool? isFavorite;
 
   factory WordModel.fromJson(Map<String, dynamic> json) => WordModel(
         word: json["word"],
