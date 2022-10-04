@@ -28,12 +28,13 @@ class UserPreferences {
     return _wordModelBox?.get(text);
   }
 
-  List<WordModel> bList = [];
   List<String> get keyList => List.from(_wordModelBox!.keys);
-  List<WordModel> favoritedList() {
-    List.from(_wordModelBox!.values).where((element) => element.isFavorite == true).forEach((element) => bList.add(element));
-    return bList;
-  }
+  List<WordModel> get favoritedList => List.from(_wordModelBox!.values)
+      .where(
+        (element) => element.isFavorite == true,
+      )
+      .cast<WordModel>()
+      .toList();
 
   void clear() {
     _wordModelBox!.clear();

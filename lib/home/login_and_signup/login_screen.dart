@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_1/home/login_and_signup/signup_screen.dart';
-
+import '../../auth/auth_service.dart';
 import '../../components/login_signup/common_image.dart';
 import '../../components/login_signup/page_title.dart';
-import '../../components/login_signup/password_field.dart';
 import '../../components/login_signup/rounded_button.dart';
 import '../../components/login_signup/standard_field.dart';
+import '../../navigation/app_router.dart';
+import '../../util/connectivity_x.dart';
+import '../../util/user_preferences.dart';
 import 'forgot_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,18 +19,26 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  TextEditingController controller = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  AuthService authService = AuthService();
+
+  bool isNotInitial() {
+    var box = UserPreferences.instance.getSkip();
+    bool isInitial = box == null ? false : true;
+    return isInitial;
+  }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    NetworkAwareState(context).initStateSubs();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    controller.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -48,13 +58,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.only(left: 10.0, right: 10),
                 child: Column(
                   children: [
-                    StandardField(
-                      hintText: 'Your email id',
-                      controller: controller,
-                      field: 'Email',
-                    ),
+                    StandardField(controller: emailController, hintText: 'Your email id', field: 'Email'),
                     const SizedBox(height: 20),
-                    const PasswordField(), // suffix
+                    StandardField(controller: passwordController, hintText: 'Your password', field: 'Password'),
+                    const SizedBox(height: 20),
+                    // const PasswordField(), // suffix
                     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                       TextButton(
                           onPressed: () {
@@ -72,7 +80,18 @@ class _LoginScreenState extends State<LoginScreen> {
               RoundedButton(
                 title: 'Login',
                 press: () {
-                  if (formKey.currentState!.validate()) {}
+                  if (formKey.currentState!.validate()) {
+                    authService.signIn(emailController.text, passwordController.text).then((e) {
+                      if (isNotInitial()) {
+                        AutoRouter.of(context).replace(const DashboardRoute());
+                      } else {
+                        AutoRouter.of(context).replace(const OnboardRoute());
+                      }
+                    }, onError: (e) {
+                      print("Error : ${e.toString()}");
+                      return ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error : ${e.toString()}')));
+                    });
+                  }
                 },
               ),
               signupButton(),
@@ -102,11 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
         TextButton(
             style: TextButton.styleFrom(padding: EdgeInsets.zero, alignment: AlignmentDirectional.centerStart),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SignupScreen(),
-                ),
-              );
+              context.router.push(const SignupRoute());
             },
             child: const Text('Sign-up', style: TextStyle(color: Color(0xFF69787f), fontWeight: FontWeight.w700)))
       ],

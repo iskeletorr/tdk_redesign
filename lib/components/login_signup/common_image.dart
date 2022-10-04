@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 class CommonImage extends StatelessWidget {
   const CommonImage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [SizedBox(height: 200, child: Image.asset('assets/avatar.jpeg'))]);
+    return Row(mainAxisAlignment: MainAxisAlignment.center,children: [SizedBox(width: 200, height: 200, child: SvgPicture.asset('assets/mindfulness.svg'))]);
   }
 }

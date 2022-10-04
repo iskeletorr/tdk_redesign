@@ -34,7 +34,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               TextButton(
                 onPressed: () {
-                  UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const DashboardRoute()));
+                  UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const LoginRoute()));
                 },
                 child: Row(
                   children: const [
@@ -109,9 +109,9 @@ class _OnboardScreenState extends State<OnboardScreen> {
                           color: Colors.white,
                           onPressed: () {
                             if (index == 2) {
-                              UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const DashboardRoute()));
+                              UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const LoginRoute()));
                               // initBox.put(kOnboardSkipStorageKey, true);
-                              // AutoRouter.of(context).replace(const DashboardRouter());
+                              // AutoRouter.of(context).replace(const LoginRouter());
                             }
                             pageController.nextPage(duration: const Duration(milliseconds: 600), curve: Curves.ease);
                           },

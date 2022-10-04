@@ -13,7 +13,11 @@
 part of 'app_router.dart';
 
 class _$AppRouter extends RootStackRouter {
-  _$AppRouter([GlobalKey<NavigatorState>? navigatorKey]) : super(navigatorKey);
+  _$AppRouter(
+      {GlobalKey<NavigatorState>? navigatorKey, required this.authGuard})
+      : super(navigatorKey);
+
+  final AuthGuard authGuard;
 
   @override
   final Map<String, PageFactory> pagesMap = {
@@ -24,6 +28,14 @@ class _$AppRouter extends RootStackRouter {
     OnboardRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
           routeData: routeData, child: const OnboardScreen());
+    },
+    LoginRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const LoginScreen());
+    },
+    SignupRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const SignupScreen());
     },
     DashboardRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
@@ -65,10 +77,8 @@ class _$AppRouter extends RootStackRouter {
           routeData: routeData, child: const FavoriteScreen());
     },
     HistoryRoute.name: (routeData) {
-      final args = routeData.argsAs<HistoryRouteArgs>(
-          orElse: () => const HistoryRouteArgs());
       return MaterialPageX<dynamic>(
-          routeData: routeData, child: HistoryScreen(key: args.key));
+          routeData: routeData, child: const HistoryScreen());
     }
   };
 
@@ -78,7 +88,11 @@ class _$AppRouter extends RootStackRouter {
             path: '/', redirectTo: '/splash', fullMatch: true),
         RouteConfig(SplashRoute.name, path: '/splash'),
         RouteConfig(OnboardRoute.name, path: '/onboard'),
-        RouteConfig(DashboardRoute.name, path: '/dashboard', children: [
+        RouteConfig(LoginRoute.name, path: '/login'),
+        RouteConfig(SignupRoute.name, path: '/signup'),
+        RouteConfig(DashboardRoute.name, path: '/dashboard', guards: [
+          authGuard
+        ], children: [
           RouteConfig(WelcomeRouter.name,
               path: 'welcome',
               parent: DashboardRoute.name,
@@ -133,6 +147,22 @@ class OnboardRoute extends PageRouteInfo<void> {
   const OnboardRoute() : super(OnboardRoute.name, path: '/onboard');
 
   static const String name = 'OnboardRoute';
+}
+
+/// generated route for
+/// [LoginScreen]
+class LoginRoute extends PageRouteInfo<void> {
+  const LoginRoute() : super(LoginRoute.name, path: '/login');
+
+  static const String name = 'LoginRoute';
+}
+
+/// generated route for
+/// [SignupScreen]
+class SignupRoute extends PageRouteInfo<void> {
+  const SignupRoute() : super(SignupRoute.name, path: '/signup');
+
+  static const String name = 'SignupRoute';
 }
 
 /// generated route for
@@ -230,20 +260,8 @@ class FavoriteRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [HistoryScreen]
-class HistoryRoute extends PageRouteInfo<HistoryRouteArgs> {
-  HistoryRoute({Key? key})
-      : super(HistoryRoute.name, path: '', args: HistoryRouteArgs(key: key));
+class HistoryRoute extends PageRouteInfo<void> {
+  const HistoryRoute() : super(HistoryRoute.name, path: '');
 
   static const String name = 'HistoryRoute';
-}
-
-class HistoryRouteArgs {
-  const HistoryRouteArgs({this.key});
-
-  final Key? key;
-
-  @override
-  String toString() {
-    return 'HistoryRouteArgs{key: $key}';
-  }
 }

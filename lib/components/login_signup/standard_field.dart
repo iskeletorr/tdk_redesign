@@ -9,6 +9,9 @@ class StandardField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      // mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(field,
             style: const TextStyle(
@@ -16,7 +19,7 @@ class StandardField extends StatelessWidget {
               fontWeight: FontWeight.w500,
               color: Color.fromARGB(192, 0, 0, 0),
             )),
-        Expanded(
+        Flexible(
           child: TextFormField(
             decoration: InputDecoration(hintText: hintText),
             controller: controller,

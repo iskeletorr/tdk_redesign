@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:practice_1/util/connectivity_x.dart';
 import 'package:practice_1/util/user_preferences.dart';
 import 'package:provider/provider.dart';
+import '../../auth/auth_service.dart';
 import '../../model/word_model.dart';
 import '../../provider/word_model_provider.dart';
 import '../../navigation/app_router.dart';
@@ -18,10 +20,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   List<String> wordList = UserPreferences.instance.keyList;
   String? randomWord;
   WordModel? randomWordModel;
+  AuthService auth = AuthService();
+  Future? latevar;
 
   @override
   void initState() {
     super.initState();
+    NetworkAwareState(context).initStateSubs();
     if (wordList.isEmpty) {
       randomWord = 'empty';
       randomWordModel = WordModel(word: randomWord);
@@ -40,46 +45,48 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WordModelProvider>(
-        builder: (context, wordModelProvider, child) => Scaffold(
-              backgroundColor: Colors.white,
-              appBar: appBar(),
-              body: DefaultTabController(
-                length: 2,
-                child: Container(
-                  color: const Color(0xFFc91d42),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(9), color: Colors.white),
-                          child: searchRow(),
-                        ),
-                      ),
-                      const TabBar(indicatorColor: Colors.transparent, tabs: [
-                        Tab(
-                            child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text('Günün Kelimesi', style: TextStyle(fontSize: 16)),
-                        )),
-                        Tab(
-                            child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text('Tümü', style: TextStyle(fontSize: 16)),
-                        ))
-                      ]),
-                      Expanded(
-                        child: TabBarView(
-                          children: [SingleChildScrollView(child: firstTabView()), const Center(child: Text('second tab view'))],
-                        ),
-                      ),
-                    ],
+    return Consumer<WordModelProvider>(builder: (context, wordModelProvider, child) {
+      context.read<WordModelProvider>().checkUser;
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: appBar(),
+        body: DefaultTabController(
+          length: 2,
+          child: Container(
+            color: const Color(0xFFc91d42),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(9), color: Colors.white),
+                    child: searchRow(),
                   ),
                 ),
-              ),
-            ));
+                const TabBar(indicatorColor: Colors.transparent, tabs: [
+                  Tab(
+                      child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Günün Kelimesi', style: TextStyle(fontSize: 16)),
+                  )),
+                  Tab(
+                      child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text('Tümü', style: TextStyle(fontSize: 16)),
+                  ))
+                ]),
+                Expanded(
+                  child: TabBarView(
+                    children: [SingleChildScrollView(child: firstTabView()), const Center(child: Text('second tab view'))],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Column firstTabView() {
@@ -107,16 +114,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               border: Border.all(width: 0, color: Colors.white),
             ),
             child: commonRow('Son Aramalar')),
+        if(wordList.isEmpty) Expanded(child: Container(height: 10,decoration: BoxDecoration(color: Colors.white))),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Container(
+            width: MediaQuery.of(context).size.width,
             color: Colors.white,
             child: Row(
-              children: [
+              children: 
                 // ??????
                 // .sublist(wordList.length-3, wordList.length)
-                ...wordList.map((e) => wordContainer(wordList.indexOf(e))).toList(),
-              ],
+                wordList.map((e) => wordContainer(wordList.indexOf(e))).toList(),
+              
             ),
           ),
         ),
@@ -189,7 +198,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             padding: EdgeInsets.zero,
             alignment: AlignmentDirectional.center),
         IconButton(
-            onPressed: () {},
+            onPressed: () {
+              auth.signOut();
+              context.read<WordModelProvider>().checkUser();
+            },
             icon: const Icon(Icons.content_copy_rounded, color: Color(0xFFc91d42)),
             padding: EdgeInsets.zero,
             alignment: AlignmentDirectional.centerStart),
@@ -216,7 +228,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           children: [
             Column(
               children: [
-                Text('${keyWord!.word}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                Text('${keyWord.word}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
                 const Text('[s] çok büyük, kocaman', style: TextStyle(fontSize: 14, color: Color(0xFF8a8686))),
               ],

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:practice_1/provider/connectivity_provider.dart';
 import 'package:practice_1/provider/word_model_provider.dart';
 import 'package:practice_1/util/user_preferences.dart';
 import 'package:provider/provider.dart';
@@ -21,55 +22,66 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    // ConnectivityProvider().setContext(context);
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    // context.read<WordModelProvider>().closeConnection();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return  Consumer<WordModelProvider>(
-            builder: (context, wordModelProvider, child) => Scaffold(
-                  appBar: AppBar(title: const Text('Search in history')),
-                  body: context.read<WordModelProvider>().wordList.isEmpty
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 20),
-                            const Text('You didn\'t search any words yet.', style: TextStyle(fontSize: 22)),
-                            Expanded(child: SvgPicture.asset('assets/no_data.svg'))
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: TextField(
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                                    hintText: 'Type here to search in history'),
-                                controller: searchController,
-                                onChanged: (value) {
-                                  wordList2 = UserPreferences.instance.keyList.where((String option) {
-                                    return option.contains(searchController.text.toLowerCase());
-                                  }).toList();
-                                  setState(() {});
-                                  // context.read<WordModelProvider>().searchedWords(value);
-                                },
-                              ),
-                            ),
-                            searchController.text.isEmpty
-                                ? dynamicListView(wordModelProvider.wordList)
-                                : dynamicListView(wordList2),
-                          ],
+    return Consumer<WordModelProvider>(
+        builder: (context, wordModelProvider, child) => Scaffold(
+              appBar: AppBar(title: const Text('Search in history')),
+              body: context.read<WordModelProvider>().wordList.isEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 20),
+                        const Text('You didn\'t search any words yet.', style: TextStyle(fontSize: 22)),
+                        Expanded(child: SvgPicture.asset('assets/no_data.svg'))
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: TextField(
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                                hintText: 'Type here to search in history'),
+                            controller: searchController,
+                            onChanged: (value) {
+                              wordList2 = UserPreferences.instance.keyList.where((String option) {
+                                return option.contains(searchController.text.toLowerCase());
+                              }).toList();
+                              setState(() {});
+
+                              // context.read<WordModelProvider>().searchedWords(value);
+                            },
+                          ),
                         ),
-                ));
+                        Consumer<ConnectivityProvider>(
+                          builder: (context, value, child) {
+                            return ElevatedButton(
+                                onPressed: () {
+                                  context.read<ConnectivityProvider>().checkConnection(context);
+                                },
+                                child: Text('Connection test'));
+                          },
+                        ),
+                        searchController.text.isEmpty ? dynamicListView(wordModelProvider.wordList) : dynamicListView(wordList2),
+                      ],
+                    ),
+            ));
   }
 
   Expanded dynamicListView(List<String> dynamicList) {
+    // context.read<WordModelProvider>().checkConnection;
     return Expanded(
         child: ListView.builder(
       itemCount: dynamicList.length,

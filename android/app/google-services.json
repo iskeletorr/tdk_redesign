@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "451212178113",
+    "firebase_url": "https://tdk-redesign-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "tdk-redesign",
+    "storage_bucket": "tdk-redesign.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:451212178113:android:5266cca0e59472f7145a40",
+        "android_client_info": {
+          "package_name": "com.example.practice_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "451212178113-0ag69klqn9ie57rmcma2ht34787if7h8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzXsdUI9fOihQqXbas4UvrJmWz5TTV1es"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "451212178113-0ag69klqn9ie57rmcma2ht34787if7h8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "451212178113-ktqqa2qgkreevcecs67t8pv2mrs7834a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.practice1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
