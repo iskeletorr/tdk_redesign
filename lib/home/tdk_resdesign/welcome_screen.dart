@@ -1,13 +1,14 @@
 import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_1/util/connectivity_x.dart';
-import 'package:practice_1/util/user_preferences.dart';
 import 'package:provider/provider.dart';
+
 import '../../auth/auth_service.dart';
 import '../../model/word_model.dart';
-import '../../provider/word_model_provider.dart';
 import '../../navigation/app_router.dart';
+import '../../provider/word_model_provider.dart';
+import '../../util/user_preferences.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -26,16 +27,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void initState() {
     super.initState();
-    NetworkAwareState(context).initStateSubs();
-    if (wordList.isEmpty) {
-      randomWord = 'empty';
-      randomWordModel = WordModel(word: randomWord);
-      wordList.add(randomWord!);
-    } else {
-      wordList.elementAt(0) == 'empty' ? wordList.removeAt(0) : null;
-      randomWord = wordList.elementAt(Random().nextInt(wordList.length));
-      randomWordModel = UserPreferences.instance.getWord(randomWord!);
-    }
   }
 
   @override
@@ -45,12 +36,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WordModelProvider>(builder: (context, wordModelProvider, child) {
-      context.read<WordModelProvider>().checkUser;
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: appBar(),
-        body: DefaultTabController(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: appBar(),
+      body: Consumer<WordModelProvider>(builder: (context, wordModelProvider, child) {
+        return DefaultTabController(
           length: 2,
           child: Container(
             color: const Color(0xFFc91d42),
@@ -84,9 +74,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ],
             ),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   Column firstTabView() {
@@ -95,7 +85,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       children: [
         buttonsContainer(),
         SizedBox(
-          // height: 40,
           child: Stack(
             children: [
               Container(color: Colors.white, height: 30),
@@ -114,25 +103,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               border: Border.all(width: 0, color: Colors.white),
             ),
             child: commonRow('Son Aramalar')),
-        if(wordList.isEmpty) Expanded(child: Container(height: 10,decoration: BoxDecoration(color: Colors.white))),
+        // if (wordList.isEmpty) Expanded(child: Container(height: 10, decoration: const BoxDecoration(color: Colors.white))),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Container(
-            width: MediaQuery.of(context).size.width,
+            width: wordList.length <= 1 ? MediaQuery.of(context).size.width : null,
+            height: MediaQuery.of(context).size.height * 0.17,
             color: Colors.white,
             child: Row(
-              children: 
-                // ??????
-                // .sublist(wordList.length-3, wordList.length)
-                wordList.map((e) => wordContainer(wordList.indexOf(e))).toList(),
-              
+              children: wordList.length >= 3
+                  ? wordList.sublist(wordList.length - 3).map((e) => wordContainer(wordList.indexOf(e))).toList()
+                  : wordList.map((e) => wordContainer(wordList.indexOf(e))).toList(),
             ),
           ),
         ),
-        Container(
-          height: 10,
-          color: Colors.white,
-        )
+        Container(height: 10, color: Colors.white)
       ],
     );
   }
@@ -152,7 +137,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           preferredSize: Size.zero,
           child: Column(
             children: const [
-              // SizedBox(height: 10),
               Text("11.027 kelime içinden arama yapın.", style: TextStyle(fontSize: 16, color: Colors.white70)),
             ],
           )),
@@ -198,10 +182,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             padding: EdgeInsets.zero,
             alignment: AlignmentDirectional.center),
         IconButton(
-            onPressed: () {
-              auth.signOut();
-              context.read<WordModelProvider>().checkUser();
-            },
+            onPressed: () {},
             icon: const Icon(Icons.content_copy_rounded, color: Color(0xFFc91d42)),
             padding: EdgeInsets.zero,
             alignment: AlignmentDirectional.centerStart),
@@ -210,15 +191,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Widget wordContainer(int index) {
-    // print(index);
-    // print(wordList[index]);
-    // var keyWord;
-    // if (index == 0) {
-    //   keyWord = randomWordModel;
-    // } else {
     var keyWord = UserPreferences.instance.getWord(wordList[index]);
-    if (keyWord == null) return SizedBox.shrink();
-    // }
+    // if (keyWord == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -228,7 +202,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           children: [
             Column(
               children: [
-                Text('${keyWord.word}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                Text('${keyWord?.word}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 4),
                 const Text('[s] çok büyük, kocaman', style: TextStyle(fontSize: 14, color: Color(0xFF8a8686))),
               ],
@@ -236,14 +210,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             const SizedBox(width: 100),
             IconButton(
                 onPressed: () {
-                  keyWord.isFavorite = !keyWord.isFavorite!;
-                  UserPreferences.instance.putWord(wordList[index], keyWord);
-                  print(keyWord.isFavorite);
-                  setState(() {});
+                  keyWord.isFavorite == true
+                      ? context.read<WordModelProvider>().changeFavorite(
+                        context.read<WordModelProvider>().keyWordList.indexOf(keyWord)
+                        )
+                      : context.read<WordModelProvider>().addFavorite(keyWord);
                 },
                 icon: Icon(
                   Icons.bookmark_border,
-                  color: keyWord.isFavorite! ? Colors.red : Colors.black,
+                  color: keyWord!.isFavorite! ? Colors.red : Colors.black,
                 )),
           ],
         ),
@@ -269,6 +244,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Container buttonsContainer() {
+    if (wordList.isNotEmpty && randomWord == null) {
+      randomWord = wordList.elementAt(Random().nextInt(wordList.length));
+      randomWordModel = UserPreferences.instance.getWord(randomWord!);
+    }
+
     return Container(
       decoration:
           const BoxDecoration(borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)), color: Color(0xFFf8f1e9)),
@@ -304,12 +284,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: Material(
           // elevation: 5.0,
           borderRadius: BorderRadius.circular(10),
-          child: Container(
-            // padding: const EdgeInsets.all(12.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icon(iconData, color: color), const SizedBox(height: 7), Text(text, style: TextStyle(color: color))],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Icon(iconData, color: color), const SizedBox(height: 7), Text(text, style: TextStyle(color: color))],
           ),
         ),
       ),

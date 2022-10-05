@@ -1,9 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:practice_1/auth/auth_service.dart';
-import 'package:practice_1/util/user_preferences.dart';
+
+import '../../auth/auth_service.dart';
 import '../../navigation/app_router.dart';
+import '../../util/user_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -47,10 +48,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF34a8eb),
+    return const Scaffold(
+      backgroundColor: Color(0xFF34a8eb),
       body: Center(
-        child: CircularProgressIndicator(color: Colors.red,),
+        child: CircularProgressIndicator(color: Colors.red),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+
 import '../../auth/auth_service.dart';
 import '../../components/login_signup/common_image.dart';
 import '../../components/login_signup/page_title.dart';
@@ -8,7 +9,6 @@ import '../../components/login_signup/standard_field.dart';
 import '../../navigation/app_router.dart';
 import '../../util/connectivity_x.dart';
 import '../../util/user_preferences.dart';
-import 'forgot_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,15 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     StandardField(controller: passwordController, hintText: 'Your password', field: 'Password'),
                     const SizedBox(height: 20),
-                    // const PasswordField(), // suffix
                     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                       TextButton(
                           onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const ForgotScreen(),
-                              ),
-                            );
+                            // navigate forgot screen
                           },
                           child: const Text('Forget password?', style: TextStyle(color: Color.fromARGB(200, 107, 103, 103))))
                     ]),
@@ -137,9 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
           icon: Image.asset('assets/gmail.png'),
           style: ButtonStyle(elevation: MaterialStateProperty.all(15)),
         ),
-        const SizedBox(
-          width: 15,
-        ),
+        const SizedBox(width: 15),
         // IconButton(onPressed: () {}, icon: Image.asset('assets/facebook-new.png')),
         // Inkwell() or GestureDetector()
         InkWell(

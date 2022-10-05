@@ -1,18 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:auto_route/empty_router_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_1/auth/auth_service.dart';
-import 'package:practice_1/home/login_and_signup/login_screen.dart';
-import 'package:practice_1/home/login_and_signup/signup_screen.dart';
-import 'package:practice_1/home/login_and_signup/splash_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/desc_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/favorite_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/history_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/onboard_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/search_screen.dart';
-import 'package:practice_1/home/tdk_resdesign/welcome_screen.dart';
 
+import '../auth/auth_service.dart';
+import '../home/login_and_signup/login_screen.dart';
+import '../home/login_and_signup/signup_screen.dart';
+import '../home/login_and_signup/splash_screen.dart';
 import '../home/tdk_resdesign/dashboard_view.dart';
+import '../home/tdk_resdesign/desc_screen.dart';
+import '../home/tdk_resdesign/favorite_screen.dart';
+import '../home/tdk_resdesign/history_screen.dart';
+import '../home/tdk_resdesign/onboard_screen.dart';
+import '../home/tdk_resdesign/search_screen.dart';
+import '../home/tdk_resdesign/welcome_screen.dart';
+
 part 'app_router.gr.dart';
 
 @MaterialAutoRouter(
@@ -57,7 +58,7 @@ class AuthGuard extends AutoRouteGuard {
      if(AuthService().currentUser()){                   
         resolver.next(true);          
       }else{                   
-         router.push(LoginRoute());          
+         router.push(const LoginRoute());          
          }              
      }          
 }      

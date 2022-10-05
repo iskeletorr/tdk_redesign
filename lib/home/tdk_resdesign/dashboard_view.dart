@@ -2,10 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_1/provider/notification_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../navigation/app_router.dart';
+import '../../provider/notification_provider.dart';
+import '../../util/connectivity_x.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,47 +19,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    NetworkAwareState(context).initStateSubs();
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        context.router.navigateNamed('/dashboard/history');
+      }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (RemoteMessage? message) {
+        context.read<NotificationProvider>().addNotiList(message);
+        if (message?.data.containsValue('history') == true) {
+          context.router.navigateNamed('/dashboard/history');
+        }
+      },
+    );
     FirebaseMessaging.onMessage.listen(
       (RemoteMessage? message) {
-        print('before : ${context.read<NotificationProvider>().notiList}');
         context.read<NotificationProvider>().addNotiList(message);
-        print('after : ${context.read<NotificationProvider>().notiList.first!
-        .notification?.body}');
-        print('${message?.data['view']}');
-        print("Handling a background message: ${message?.messageId}");
-        var temp = AwesomeNotifications().createNotification(
+        AwesomeNotifications().createNotification(
           content: NotificationContent(
-              id: 1,
-              channelKey: 'basic_channel',
-              title: message?.notification?.title,
-              body: message?.notification?.body,
-              payload: {'click_action': 'FLUTTER_NOTIFICATION_CLICK', 'view': 'history'}),
+            id: 1,
+            channelKey: 'basic_channel',
+            title: message?.notification?.title,
+            body: message?.notification?.body,
+            payload: {'click_action': 'FLUTTER_NOTIFICATION_CLICK', 'view': 'history'},
+          ),
         );
-
-        //     // print(message?.data['view'] == 'history');
-        //     // if (message?.data['view'] == 'history') {
-        //     //   // Navigator.pushNamed(
-        //     //   //   bcontext,
-        //     //   //   '/dashboard/history',
-        //     //   //   arguments: message,
-        //     //   // );
-        //     //   context.router.navigateNamed('/dashboard/history');
-        //     // }
       },
     );
     AwesomeNotifications().actionStream.listen((receivedAction) {
-      if (receivedAction.payload!.containsValue('history')) {
-        // Navigator.pushNamed(
-        //   bcontext,
-        //   '/dashboard/history',
-        //   arguments: message,
-        // );
+      if (receivedAction.payload?.containsValue('history') == true) {
         context.router.navigateNamed('/dashboard/history');
       }
-
-      print('actionStream---------->');
-      print(receivedAction);
     });
+  }
+
+  @override
+  void dispose() {
+    NetworkAwareState(context).disposeSubs();
+    super.dispose();
   }
 
   @override
@@ -95,57 +94,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         showUnselectedLabels: false,
         elevation: 0,
         items: [
-          BottomNavigationBarItem(
-              icon: Container(
-                color: Colors.white,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.home_outlined),
-                    Divider(
-                      thickness: 5,
-                      color: context.tabsRouter.activeIndex == 0 ? Colors.red : Colors.transparent,
-                    )
-                  ],
-                ),
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.search),
-                  Divider(
-                    thickness: 5,
-                    color: context.tabsRouter.activeIndex == 1 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.bookmark_border),
-                  Divider(
-                    thickness: 5,
-                    color: context.tabsRouter.activeIndex == 2 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.history),
-                  Divider(
-                    thickness: 5,
-                    color: context.tabsRouter.activeIndex == 3 ? Colors.red : Colors.transparent,
-                  )
-                ],
-              ),
-              label: ''),
+          navBarItem(context, 0, const Icon(Icons.home_outlined)),
+          navBarItem(context, 1, const Icon(Icons.search)),
+          navBarItem(context, 2, const Icon(Icons.bookmark_border)),
+          navBarItem(context, 3, const Icon(Icons.history)),
         ]);
+  }
+
+  BottomNavigationBarItem navBarItem(BuildContext context, int index, Icon icon) {
+    return BottomNavigationBarItem(
+        icon: Container(
+          color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              icon,
+              Divider(
+                thickness: 5,
+                color: context.tabsRouter.activeIndex == index ? Colors.red : Colors.transparent,
+              )
+            ],
+          ),
+        ),
+        label: '');
   }
 }

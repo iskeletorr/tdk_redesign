@@ -7,9 +7,15 @@ class RoundedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: 330,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(21), color: const Color(0xFF243b44)),
-        child:
-            TextButton(onPressed: press, child: Text(title, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w500, color: Colors.white))));
+      width: 330,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(21), color: const Color(0xFF243b44)),
+      child: TextButton(
+        onPressed: press,
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w500, color: Colors.white),
+        ),
+      ),
+    );
   }
 }

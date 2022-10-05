@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:practice_1/auth/auth_service.dart';
-import 'package:practice_1/model/word_model.dart';
-import 'package:practice_1/util/user_preferences.dart';
+
+import '../auth/auth_service.dart';
+import '../model/word_model.dart';
+import '../util/user_preferences.dart';
 
 class WordModelProvider extends ChangeNotifier {
   BuildContext context;
@@ -12,6 +13,12 @@ class WordModelProvider extends ChangeNotifier {
   Future<void> setWord(String key, WordModel model) async {
     await UserPreferences.instance.putWord(key, model);
     notifyListeners();
+  }
+
+  void addFavorite(WordModel keyWord) {
+    keyWord.isFavorite = !keyWord.isFavorite!;
+    keyWordList.add(keyWord);
+    setWord(keyWord.word!, keyWord);
   }
 
   void changeFavorite(int index) {

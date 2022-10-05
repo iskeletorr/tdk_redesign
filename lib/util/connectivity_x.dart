@@ -8,6 +8,7 @@ class NetworkAwareState {
   StreamSubscription<ConnectivityResult>? _networkSubscription;
   final Connectivity _connectivity = Connectivity();
   bool _isDisconnected = false;
+
   void initStateSubs() {
     initConnectivity();
     _networkSubscription = _connectivity.onConnectivityChanged.listen((result) {
@@ -49,17 +50,6 @@ class NetworkAwareState {
       ),
     );
   }
-
-  // void onDisconnected() {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(
-  //       content: Text(
-  //         'Disconnected',
-  //         style: TextStyle(fontSize: 30),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   void disposeSubs() {
     cancelSubscription();

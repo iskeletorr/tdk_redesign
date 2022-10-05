@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:practice_1/auth/auth_service.dart';
-import 'package:practice_1/components/login_signup/rounded_button.dart';
-import '../../components/login_signup/camera.dart';
+
+import '../../auth/auth_service.dart';
 import '../../components/login_signup/common_image.dart';
 import '../../components/login_signup/page_title.dart';
-import '../../components/login_signup/password_field.dart';
+import '../../components/login_signup/rounded_button.dart';
 import '../../components/login_signup/standard_field.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -18,8 +17,6 @@ class _SignupScreenState extends State<SignupScreen> {
   AuthService authService = AuthService();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController controller3 = TextEditingController();
-  // TextEditingController controller4 = TextEditingController();
 
   @override
   void initState() {
@@ -30,8 +27,6 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    controller3.dispose();
-    // controller4.dispose();
     super.dispose();
   }
 
@@ -45,24 +40,15 @@ class _SignupScreenState extends State<SignupScreen> {
             children: [
               const CommonImage(),
               const PageTitle('Sign-up'),
-              // const SizedBox(
-              //   height: 100,
-              //   child: CameraAccess(),
-              // ),
               Padding(
                 padding: const EdgeInsets.only(left: 12.0, right: 12.0),
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
-                  
-
-                    StandardField(controller: emailController, hintText: 'Your email id', field: 'Email'), // name
+                    StandardField(controller: emailController, hintText: 'Your email id', field: 'Email'),
                     const SizedBox(height: 20),
-                    StandardField(controller: passwordController, hintText: 'Your password', field: 'Password'), // email
-                    // const SizedBox(height: 10),
-                    // StandardField(controller: controller3, hintText: 'Your contact number', field: 'Contact'),
+                    StandardField(controller: passwordController, hintText: 'Your password', field: 'Password'),
                     const SizedBox(height: 10),
-                    // const PasswordField(),
                     RoundedButton(
                       title: 'Signup',
                       press: () {

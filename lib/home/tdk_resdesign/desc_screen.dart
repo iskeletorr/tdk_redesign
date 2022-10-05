@@ -22,7 +22,6 @@ class _DescScreenState extends State<DescScreen> {
   Future<WordModel> getWordModel() async {
     WordModel model = await NetworkManager.getWord(widget.text);
     await context.read<WordModelProvider>().setWord(widget.text!, model);
-    // await UserPreferences.instance.putWord(widget.text!, model);
     return Future.value(model);
   }
 
@@ -30,7 +29,6 @@ class _DescScreenState extends State<DescScreen> {
   void initState() {
     super.initState();
     box = UserPreferences.instance.getWord(widget.text.toString());
-    //  context.read<WordModelProvider>().setWord(widget.text!, box!);
     if (box == null) {
       lateWordModel = getWordModel();
     }
@@ -38,15 +36,14 @@ class _DescScreenState extends State<DescScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WordModelProvider>(
-        builder: (context, wordModelProvider, child) => Scaffold(
-            body: box == null
+    return Scaffold(
+        body: Consumer<WordModelProvider>(
+            builder: (context, wordModelProvider, child) => box == null
                 ? FutureBuilder<WordModel?>(
                     future: lateWordModel,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Center(child: Text('data is not cached'));
-                        // return defaultTabController(box);
                       }
                       if (snapshot.connectionState != ConnectionState.done) {
                         return const Center(child: CircularProgressIndicator());
@@ -56,7 +53,7 @@ class _DescScreenState extends State<DescScreen> {
                 : defaultTabController(box)));
   }
 
-  DefaultTabController defaultTabController(WordModel? boxing) {
+  DefaultTabController defaultTabController(WordModel? box) {
     return DefaultTabController(
       length: 3,
       child: Column(
@@ -70,32 +67,7 @@ class _DescScreenState extends State<DescScreen> {
                 ],
               ),
               centerTitle: true,
-              title: Row(children: [
-                const SizedBox(width: 30),
-                IconButton(
-                    onPressed: () => Pronunciation.instance.playSound('${boxing!.phonetics![0].audio}'),
-                    icon: const Icon(Icons.volume_up_outlined, size: 40)),
-                const SizedBox(width: 10),
-                Text('${boxing?.word}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w500)),
-                const SizedBox(width: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          // boxing.isFavorite = !boxing.isFavorite!;
-                          // UserPreferences.instance.putWord(widget.text!, boxing);
-                          // print(boxing.isFavorite);
-                          // setState(() {});
-                          Provider.of<WordModelProvider>(context, listen: false).changeFavoriteFromDesc(widget.text!);
-                        },
-                        icon: Icon(
-                          Icons.bookmark_border,
-                          color: boxing!.isFavorite! ? Colors.black : Colors.white,
-                        )),
-                  ],
-                )
-              ])),
+              title: appBarTitle(box)),
           Container(
             color: const Color(0xFFc91d42),
             child: Column(
@@ -137,12 +109,7 @@ class _DescScreenState extends State<DescScreen> {
                             padding: const EdgeInsets.all(25.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // const SizedBox(width: 15),
-                                ...boxing.meanings!.map((e) => bodyColumn(boxing, boxing.meanings!.indexOf(e))).toList(),
-                                // bodyColumn(boxing, 1),
-                                // bodyColumn(boxing, 2),
-                              ],
+                              children: box!.meanings!.map((e) => bodyColumn(box, box.meanings!.indexOf(e))).toList(),
                             ),
                           )
                         ],
@@ -156,52 +123,86 @@ class _DescScreenState extends State<DescScreen> {
     );
   }
 
+  Row appBarTitle(WordModel? box) {
+    return Row(children: [
+              const SizedBox(width: 30),
+              IconButton(
+                  onPressed: () => Pronunciation.instance.playSound('${box!.phonetics![0].audio}'),
+                  icon: const Icon(Icons.volume_up_outlined, size: 40)),
+              const SizedBox(width: 10),
+              Text('${box?.word}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w500)),
+              const SizedBox(width: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Provider.of<WordModelProvider>(context, listen: false).changeFavoriteFromDesc(widget.text!);
+                      },
+                      icon: Icon(
+                        Icons.bookmark_border,
+                        color: box!.isFavorite! ? Colors.black : Colors.white,
+                      )),
+                ],
+              )
+            ]);
+  }
+
   Column bodyColumn(WordModel? box, int index) {
     List? synonym = box?.meanings![index].definitions!.first.synonyms;
     String? example = box?.meanings![index].definitions!.first.example;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${index + 1}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 7),
-            Flexible(
-              child: RichText(
-                  text: TextSpan(children: [
-                TextSpan(
-                    text: box?.meanings![index].partOfSpeech, style: const TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold)),
-                const TextSpan(text: "   "),
-                TextSpan(
-                  text: '${box?.meanings![index].definitions!.first.definition}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
-                )
-              ])),
-            ),
-          ],
-        ),
-        if ((example != null))
-          Column(
-            children: [
-              const SizedBox(height: 20),
-              Text(
-                example,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
-              ),
-            ],
-          ),
-        if ((synonym?.isNotEmpty != false))
-          Column(
-            children: [
-              const SizedBox(height: 20),
-              Text(
-                '${synonym!.first}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
-              ),
-            ],
-          ),
+        meaning(index, box),
+        if ((example != null)) meaningExample(example),
+        if ((synonym?.isNotEmpty != false)) meaningSynonym(synonym),
         const SizedBox(height: 30),
+      ],
+    );
+  }
+
+  Row meaning(int index, WordModel? box) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('${index + 1}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(width: 7),
+        Flexible(
+          child: RichText(
+              text: TextSpan(children: [
+            TextSpan(text: box?.meanings![index].partOfSpeech, style: const TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold)),
+            const TextSpan(text: "   "),
+            TextSpan(
+              text: '${box?.meanings![index].definitions!.first.definition}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+            )
+          ])),
+        ),
+      ],
+    );
+  }
+
+  Column meaningExample(String example) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          example,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Column meaningSynonym(List<dynamic>? synonym) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          '${synonym!.first}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, color: Colors.grey),
+        ),
       ],
     );
   }

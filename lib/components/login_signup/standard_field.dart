@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 
-class StandardField extends StatelessWidget {
+class StandardField extends StatefulWidget {
   const StandardField({super.key, required this.controller, required this.hintText, required this.field});
   final TextEditingController controller;
   final String hintText;
   final String field;
 
   @override
+  State<StandardField> createState() => _StandardFieldState();
+}
+
+class _StandardFieldState extends State<StandardField> {
+  bool obscure = false;
+
+  @override
   Widget build(BuildContext context) {
     return Column(
-      // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(field,
+        Text(widget.field,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -21,11 +27,22 @@ class StandardField extends StatelessWidget {
             )),
         Flexible(
           child: TextFormField(
-            decoration: InputDecoration(hintText: hintText),
-            controller: controller,
-            validator: (val) => val!.isEmpty ? "${field} can't be empty" : null,
+            decoration: InputDecoration(
+                hintText: widget.hintText,
+                suffix: Visibility(
+                  visible: widget.field.contains('Password') ? true : false,
+                  child: IconButton(
+                      onPressed: () {
+                        obscure = !obscure;
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.remove_red_eye)),
+                )),
+            obscureText: obscure,
+            controller: widget.controller,
+            validator: (val) => val!.isEmpty ? "${widget.field} can't be empty" : null,
             onSaved: (val) {
-              controller.text = val.toString();
+              widget.controller.text = val.toString();
             },
           ),
         ),

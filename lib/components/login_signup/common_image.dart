@@ -6,6 +6,12 @@ class CommonImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.center,children: [SizedBox(width: 200, height: 200, child: SvgPicture.asset('assets/mindfulness.svg'))]);
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      SizedBox(
+        width: 200,
+        height: 200,
+        child: SvgPicture.asset('assets/mindfulness.svg'),
+      )
+    ]);
   }
 }

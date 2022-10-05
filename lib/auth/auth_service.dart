@@ -25,19 +25,7 @@ class AuthService {
     return user.user;
   }
 
-  // checkStatus(BuildContext context) {
-  //   _auth.authStateChanges().listen((User? user) {
-  //     if (user == null) {
-  //       print('User is currently signed out!');
-  //     } else {
-  //       print('User is signed in!');
-  //       context.router.navigateNamed('/dashboard');
-  //     }
-  //   });
-  // }
-
   bool currentUser() {
-    print(_auth.currentUser!.email);
-    return _auth.currentUser!.email != null ? true : false;
+    return _auth.currentUser?.email != null ? true : false;
   }
 }

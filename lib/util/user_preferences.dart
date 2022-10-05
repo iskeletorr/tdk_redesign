@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
-import 'package:practice_1/model/word_model.dart';
 
 import '../constants/app_constants.dart';
+import '../model/word_model.dart';
 
 class UserPreferences {
   static UserPreferences instance = UserPreferences._init();

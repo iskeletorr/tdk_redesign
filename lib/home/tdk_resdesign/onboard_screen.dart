@@ -1,7 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_1/util/user_preferences.dart';
+
 import '../../navigation/app_router.dart';
+import '../../util/user_preferences.dart';
 
 class OnboardScreen extends StatefulWidget {
   const OnboardScreen({super.key});
@@ -74,52 +75,44 @@ class _OnboardScreenState extends State<OnboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                            color: index == 0 ? Colors.transparent : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white)),
-                      ),
+                      circleAvatar(index, 0),
                       const SizedBox(width: 8),
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                            color: index == 1 ? Colors.transparent : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white)),
-                      ),
+                      circleAvatar(index, 1),
                       const SizedBox(width: 8),
-                      Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: index == 2 ? Colors.transparent : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white),
-                          ))
+                      circleAvatar(index, 2),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                          color: Colors.white,
-                          onPressed: () {
-                            if (index == 2) {
-                              UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const LoginRoute()));
-                              // initBox.put(kOnboardSkipStorageKey, true);
-                              // AutoRouter.of(context).replace(const LoginRouter());
-                            }
-                            pageController.nextPage(duration: const Duration(milliseconds: 600), curve: Curves.ease);
-                          },
-                          icon: const Icon(Icons.arrow_forward_ios_rounded))
-                    ],
-                  )
+                  pageViewController(index, context)
                 ],
               ));
         });
+  }
+
+  Container circleAvatar(int index, int num) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+          color: index == num ? Colors.transparent : Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white)),
+    );
+  }
+
+  Row pageViewController(int index, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+            color: Colors.white,
+            onPressed: () {
+              if (index == 2) {
+                UserPreferences.instance.skipToWelcome().then((value) => AutoRouter.of(context).replace(const LoginRoute()));
+                // initBox.put(kOnboardSkipStorageKey, true);
+                // AutoRouter.of(context).replace(const LoginRouter());
+              }
+              pageController.nextPage(duration: const Duration(milliseconds: 600), curve: Curves.ease);
+            },
+            icon: const Icon(Icons.arrow_forward_ios_rounded))
+      ],
+    );
   }
 }
