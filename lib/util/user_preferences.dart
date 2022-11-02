@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
+import 'package:practice_1/util/i_user_preferences.dart';
 
 import '../constants/app_constants.dart';
 import '../model/word_model.dart';
 
-class UserPreferences {
+class UserPreferences implements IUserPreferences<WordModel> {
   static UserPreferences instance = UserPreferences._init();
 
   Box? _initBox;
@@ -13,7 +14,7 @@ class UserPreferences {
     _wordModelBox ??= Hive.box('wordModels');
   }
   Future<void> skipToWelcome() async {
-    await _initBox?.put(kOnboardSkipStorageKey, true);
+    await _initBox?.get(kOnboardSkipStorageKey);
   }
 
   bool? getSkip() {
@@ -38,5 +39,15 @@ class UserPreferences {
 
   void clear() {
     _wordModelBox!.clear();
+  }
+
+  @override
+  WordModel? get(String key) {
+    return _initBox?.get(key);
+  }
+
+  @override
+  Future<void> put(String text, WordModel word) async {
+    return _initBox?.put(text, word);
   }
 }
